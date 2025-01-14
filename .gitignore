@@ -2,3 +2,4 @@ dataset/mlcourse-dota2-win-prediction.zip
 dataset/mlcourse-dota2-win-prediction/test_matches.jsonl
 dataset/mlcourse-dota2-win-prediction/train_matches.jsonl
 dataset/mlcourse-dota2-win-prediction/train_matches.jsonl.zip
+code/__pycache__
