@@ -135,6 +135,7 @@ def playerstats_teamheros_transform(df: pd.DataFrame, target: pd.DataFrame):
     return df,target
 
 def teamstats_teamheros_transform(df: pd.DataFrame, target: pd.DataFrame):
+    #we handle PerformanceWarning by doing the copy of the dataframe, this ignore is for quality of outputs
     warnings.simplefilter(action='ignore', category=pd.errors.PerformanceWarning)
     hero_id_labels = get_hero_id_labels(df)
 
