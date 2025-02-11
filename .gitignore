@@ -4,3 +4,4 @@ dataset/mlcourse-dota2-win-prediction/train_matches.jsonl
 code/__pycache__/dataset_functions.cpython-312.pyc
 code/__pycache__/playerstats_teamheroes.cpython-312.pyc
 code/__pycache__/reasoning.cpython-312.pyc
+venv.ps1
