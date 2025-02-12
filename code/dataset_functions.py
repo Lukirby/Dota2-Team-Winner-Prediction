@@ -12,11 +12,11 @@ def get_dataset():
     df = pd.read_csv(featureset_path)
     target = pd.read_csv(targetset_path)
 
-    print("Features: ",df.columns,"\n")
-    print("Target Columns: ",target.columns,"\n")
+    #print("Features: ",df.columns,"\n")
+    #print("Target Columns: ",target.columns,"\n")
 
-    column_to_drop = ["lobby_type","chat_len","game_mode"] # "match_id_hash","objectives_len"
-
+    column_to_drop = ["lobby_type","chat_len","game_mode","match_id_hash"] # "match_id_hash","objectives_len"
+    
     filter = "(game_mode == 2 or game_mode == 22) and game_time > 0" # 2 standard ranked or 22 captain mode
 
     df = df.query(filter)
@@ -43,7 +43,9 @@ def get_dataset():
     print("Dropped: ",column_to_drop,"\n")
 
     print("Dataframe Shape: ",df.shape,"\n")
-
+    
+    target = target.loc[df.index]
+    print(f"Target shape: {target.shape}")
     return df,target
 
 
@@ -57,7 +59,22 @@ def get_single_hero_labels(df: pd.DataFrame) -> list[str]:
     print("Single Hero Labels:",single_hero_labels,"\n")
     return single_hero_labels
 
-def playerstats_playerheros_transform(df: pd.DataFrame, target: pd.DataFrame):
+def drop_heros_labels(df:pd.DataFrame) -> pd.DataFrame:
+    hero_id_labels = get_hero_id_labels(df)
+    if (len(hero_id_labels) == 0):
+        for label in df.columns:
+            if re.match(r"^(d|r)\d$",label):  #regex: r_1 d_2 ecc...
+                df = df.drop(label,axis=1)
+            elif re.match(r"^(d|r)\d_heroid\d$",label):      #regex: r1_hero_id_12 d3_hero_id_101 ecc..
+                df = df.drop(label,axis=1)
+    else:
+        df = df.drop(labels=hero_id_labels,axis=1)
+
+    print("Dropped Dataframe Shape:",df.shape)
+
+    return df
+
+def playerstats_playerheros_transform(df: pd.DataFrame):
 
     features_toonehot = ["r1_hero_id",
                          "r2_hero_id",
@@ -71,13 +88,13 @@ def playerstats_playerheros_transform(df: pd.DataFrame, target: pd.DataFrame):
                          "d5_hero_id"]
     df = pd.get_dummies(df,columns=features_toonehot)
 
-    target = target.loc[df.index]
-    print(target.shape)
-    df = df.drop('match_id_hash',axis=1)
+    #target = target.loc[df.index]
+    #print(target.shape)
+    #df = df.drop('match_id_hash',axis=1)
 
-    return df,target
+    return df
 
-def playerstats_teamheros_transform(df: pd.DataFrame, target: pd.DataFrame):
+def playerstats_teamheros_transform(df: pd.DataFrame):
     warnings.simplefilter(action='ignore', category=pd.errors.PerformanceWarning)
     hero_id_labels = get_hero_id_labels(df)
 
@@ -129,13 +146,13 @@ def playerstats_teamheros_transform(df: pd.DataFrame, target: pd.DataFrame):
             i += 1
     print(f"Total: {i}") """
 
-    target = target.loc[df.index]
-    print(target.shape)
-    df = df.drop('match_id_hash',axis=1)
+    #target = target.loc[df.index]
+    #print(target.shape)
+    
 
-    return df,target
+    return df
 
-def teamstats_teamheros_transform(df: pd.DataFrame, target: pd.DataFrame):
+def teamstats_teamheros_transform(df: pd.DataFrame):
     #we handle PerformanceWarning by doing the copy of the dataframe, this ignore is for quality of outputs
     warnings.simplefilter(action='ignore', category=pd.errors.PerformanceWarning)
     hero_id_labels = get_hero_id_labels(df)
@@ -210,11 +227,11 @@ def teamstats_teamheros_transform(df: pd.DataFrame, target: pd.DataFrame):
     #        df = df.drop(label,axis=1)
     #print(df.shape)
 
-    target = target.loc[df.index]
-    print(target.shape)
-    df = df.drop('match_id_hash',axis=1)
+    #target = target.loc[df.index]
+    #print(target.shape)
+    
 
-    return df,target
+    return df
 
 def team_mean_position_transform (df: pd.DataFrame):
     labels_radiant_x = ["r1_x", "r2_x", "r3_x", "r4_x", "r5_x"]
