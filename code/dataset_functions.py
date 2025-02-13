@@ -56,7 +56,7 @@ def get_hero_id_labels(df: pd.DataFrame) -> list[str]:
 
 def get_single_hero_labels(df: pd.DataFrame) -> list[str]:
     single_hero_labels = [s for s in df.columns if re.match(r"^(d|r)\d",s)]
-    print("Single Hero Labels:",single_hero_labels,"\n")
+    print("Single Player Labels:",single_hero_labels,"\n")
     return single_hero_labels
 
 def drop_heros_labels(df:pd.DataFrame) -> pd.DataFrame:
@@ -189,7 +189,7 @@ def teamstats_teamheros_transform(df: pd.DataFrame):
 
     df = df.drop(labels=hero_id_labels,axis=1) #removed ri_hero_id and di_hero_id
 
-    print("Dataframe Shape:",df.shape,"\n")
+    #print("Dataframe Shape:",df.shape,"\n")
 
     #print(df.iloc[0]["match_id_hash"])
     #print(df.iloc[0][df.iloc[0] == 1][-11:])
@@ -217,7 +217,7 @@ def teamstats_teamheros_transform(df: pd.DataFrame):
             df[new_label] += df[label]
     single_hero_labels = single_hero_labels2.copy()
     df = df.drop(labels=single_hero_labels,axis=1).copy()
-    print("New Dataframe Colums:",df.columns,"\n")
+    #print("New Dataframe Colums:",df.columns,"\n")
     print("New Dataframe Shape:",df.shape,"\n")
 
     #print(df.query("d_firstblood_claimed == 0 and r_firstblood_claimed == 0").shape)
