@@ -65,9 +65,9 @@ def drop_heros_labels(df:pd.DataFrame) -> pd.DataFrame:
     hero_id_labels = get_hero_id_labels(df)
     if (len(hero_id_labels) == 0):
         for label in df.columns:
-            if re.match(r"^(d|r)\d$",label):  #regex: r_1 d_2 ecc...
+            if re.match(r"^(d|r)_\d+$", label):  #regex: r_1 d_2 r_124 etc... 
                 df = df.drop(label,axis=1)
-            elif re.match(r"^(d|r)\d_heroid\d$",label):      #regex: r1_hero_id_12 d3_hero_id_101 ecc..
+            elif re.match(r"^(d|r)\d_heroid\d+$",label):      #regex: r1_hero_id_12 d3_hero_id_101 ecc..
                 df = df.drop(label,axis=1)
     else:
         df = df.drop(labels=hero_id_labels,axis=1)
@@ -326,7 +326,7 @@ def calculate_distances(df: pd.DataFrame, x_labels, y_labels):
     return {label: np.mean(distances[label], axis=0) for label in distances}
 
 
-def feature_selection_transformation(df: pd.DataFrame,target: pd.DataFrame, threshold: float) -> pd.DataFrame:
+def feature_selection_transform(df: pd.DataFrame,target: pd.DataFrame, threshold: float) -> pd.DataFrame:
     feature_selector = RandomForestClassifier(max_depth=10,class_weight="balanced",random_state=seed)
 
     feature_selector.fit(df,target)
