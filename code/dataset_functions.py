@@ -3,6 +3,8 @@ import warnings
 import numpy as np
 import re
 from sklearn.decomposition import PCA
+from sklearn.ensemble import RandomForestClassifier
+seed = 10 
 
 def get_dataset():
 
@@ -63,9 +65,9 @@ def drop_heros_labels(df:pd.DataFrame) -> pd.DataFrame:
     hero_id_labels = get_hero_id_labels(df)
     if (len(hero_id_labels) == 0):
         for label in df.columns:
-            if re.match(r"^(d|r)\d$",label):  #regex: r_1 d_2 ecc...
+            if re.match(r"^(d|r)_\d+$",label):  #regex: r_1 d_2 ecc...
                 df = df.drop(label,axis=1)
-            elif re.match(r"^(d|r)\d_heroid\d$",label):      #regex: r1_hero_id_12 d3_hero_id_101 ecc..
+            elif re.match(r"^(d|r)\d_heroid\d+$",label):      #regex: r1_hero_id_12 d3_hero_id_101 ecc..
                 df = df.drop(label,axis=1)
     else:
         df = df.drop(labels=hero_id_labels,axis=1)
@@ -247,6 +249,9 @@ def team_mean_position_transform (df: pd.DataFrame):
     df['dire_avg_x'] = df[labels_dire_x].mean(axis=1)
     df['dire_avg_y'] = df[labels_dire_y].mean(axis=1)
 
+    #drop the original x and y columns
+    df = df.drop(labels=labels_radiant_x + labels_radiant_y + labels_dire_x + labels_dire_y, axis=1)
+
     return df
 
 def team_weighted_mean_position_transform(df: pd.DataFrame): 
@@ -290,6 +295,9 @@ def team_weighted_mean_position_transform(df: pd.DataFrame):
     df['radiant_Weighted_avg_y'] /= weights_radiant.sum(axis=1)
     df['dire_Weighted_avg_x'] /= weights_dire.sum(axis=1)
     df['dire_Weighted_avg_y'] /= weights_dire.sum(axis=1)
+
+    #drop the original x and y columns
+    df = df.drop(labels=labels_radiant_x + labels_radiant_y + labels_dire_x + labels_dire_y, axis=1)
     return df
 
 #this is ok, tested
@@ -321,3 +329,22 @@ def calculate_distances(df: pd.DataFrame, x_labels, y_labels):
                 distances[x_labels[i]].append(dist)
     return {label: np.mean(distances[label], axis=0) for label in distances}
 
+def feature_selection_transform(df: pd.DataFrame,target: pd.DataFrame, threshold: float) -> pd.DataFrame:
+    feature_selector = RandomForestClassifier(max_depth=10,class_weight="balanced",random_state=seed)
+
+    feature_selector.fit(df,target)
+
+    feature_importance = {
+        name: value 
+        for name,value in zip(feature_selector.feature_names_in_,feature_selector.feature_importances_)
+    }
+
+    feature_importance = dict(reversed(sorted(feature_importance.items(), key=lambda item: item[1])))
+    feature_names = list(feature_importance.keys())
+
+    n_selected_features = np.sum(np.array(list(feature_importance.values())) > threshold)
+
+    df_reduced = df[feature_names[:n_selected_features]]
+    print("Shape Tranformation:\n",df.shape,"->", df_reduced.shape)
+
+    return df_reduced
