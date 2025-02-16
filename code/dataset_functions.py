@@ -266,16 +266,15 @@ def team_weighted_mean_position_transform(df: pd.DataFrame):
 
     distances_radiant = ["distance_r1", "distance_r2", "distance_r3", "distance_r4", "distance_r5"]
     distances_dire = ["distance_d1", "distance_d2", "distance_d3", "distance_d4", "distance_d5"]
+
+    # Replace zero distances with 1 to avoid division by zero, only relevant for specific case of all players in the same position
+    df_Weighted[distances_radiant] = df_Weighted[distances_radiant].replace(0, 1)
+    df_Weighted[distances_dire] = df_Weighted[distances_dire].replace(0, 1)
+
     #calculate weights as the inverse of distances
     weights_radiant = 1 / df_Weighted[distances_radiant]
     weights_dire = 1 / df_Weighted[distances_dire]
     
-    #calculate average x and y for Radiant team
-    #df['radiant_Weighted_avg_x'] = (df[labels_radiant_x] * weights_radiant).sum(axis=1) / weights_radiant.sum(axis=1)
-    #df['radiant_Weighted_avg_y'] = (df[labels_radiant_y] * weights_radiant).sum(axis=1) / weights_radiant.sum(axis=1)
-    #calculate average x and y for Dire team
-    #df['dire_Weighted_avg_x'] = (df[labels_dire_x] * weights_dire).sum(axis=1) / weights_dire.sum(axis=1)
-    #df['dire_Weighted_avg_y'] = (df[labels_dire_y] * weights_dire).sum(axis=1) / weights_dire.sum(axis=1)
     #initialize weighted average columns
     df['radiant_Weighted_avg_x'] = 0
     df['radiant_Weighted_avg_y'] = 0
@@ -330,7 +329,7 @@ def calculate_distances(df: pd.DataFrame, x_labels, y_labels):
     return {label: np.mean(distances[label], axis=0) for label in distances}
 
 def feature_selection_transform(df: pd.DataFrame,target: pd.DataFrame, threshold: float) -> pd.DataFrame:
-    feature_selector = RandomForestClassifier(max_depth=10,class_weight="balanced",random_state=seed)
+    feature_selector = RandomForestClassifier(max_depth=10,random_state=seed)
 
     feature_selector.fit(df,target)
 
