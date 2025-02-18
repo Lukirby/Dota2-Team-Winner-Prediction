@@ -50,6 +50,38 @@ def get_dataset():
     print(f"Target shape: {target.shape}")
     return df,target
 
+def get_test_dataset():
+
+    featureset_path = "../dataset/mlcourse-dota2-win-prediction/test_features.csv"
+
+    df = pd.read_csv(featureset_path)
+    #print("Features: ",df.columns,"\n")
+    #print("Target Columns: ",target.columns,"\n")
+
+    column_to_drop = ["lobby_type","chat_len","game_mode","match_id_hash"] # "match_id_hash","objectives_len"
+
+    df = df.drop(labels=column_to_drop,axis=1)
+
+    tf_toreplace = ["r1_teamfight_participation",
+                    "r2_teamfight_participation",
+                    "r3_teamfight_participation",
+                    "r4_teamfight_participation",
+                    "r5_teamfight_participation",
+                    "d1_teamfight_participation",
+                    "d2_teamfight_participation",
+                    "d3_teamfight_participation",
+                    "d4_teamfight_participation",
+                    "d5_teamfight_participation"]
+
+    for label in tf_toreplace:
+        df.loc[df[label] > 1.0, label] = 1
+
+    print("Dropped: ",column_to_drop,"\n")
+
+    print("Dataframe Shape: ",df.shape,"\n")
+
+    return df
+
 
 def get_hero_id_labels(df: pd.DataFrame) -> list[str]:
     hero_id_labels = [s for s in df.columns if s.endswith('_hero_id')]
