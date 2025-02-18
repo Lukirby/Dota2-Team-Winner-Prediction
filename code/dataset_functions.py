@@ -50,6 +50,38 @@ def get_dataset():
     print(f"Target shape: {target.shape}")
     return df,target
 
+def get_test_dataset():
+
+    featureset_path = "../dataset/mlcourse-dota2-win-prediction/test_features.csv"
+
+    df = pd.read_csv(featureset_path)
+    #print("Features: ",df.columns,"\n")
+    #print("Target Columns: ",target.columns,"\n")
+
+    column_to_drop = ["lobby_type","chat_len","game_mode","match_id_hash"] # "match_id_hash","objectives_len"
+
+    df = df.drop(labels=column_to_drop,axis=1)
+
+    tf_toreplace = ["r1_teamfight_participation",
+                    "r2_teamfight_participation",
+                    "r3_teamfight_participation",
+                    "r4_teamfight_participation",
+                    "r5_teamfight_participation",
+                    "d1_teamfight_participation",
+                    "d2_teamfight_participation",
+                    "d3_teamfight_participation",
+                    "d4_teamfight_participation",
+                    "d5_teamfight_participation"]
+
+    for label in tf_toreplace:
+        df.loc[df[label] > 1.0, label] = 1
+
+    print("Dropped: ",column_to_drop,"\n")
+
+    print("Dataframe Shape: ",df.shape,"\n")
+
+    return df
+
 
 def get_hero_id_labels(df: pd.DataFrame) -> list[str]:
     hero_id_labels = [s for s in df.columns if s.endswith('_hero_id')]
@@ -75,7 +107,6 @@ def drop_heros_labels(df:pd.DataFrame) -> pd.DataFrame:
     print("Dropped Dataframe Shape:",df.shape)
 
     return df
-
 
 def playerstats_playerheros_transform(df: pd.DataFrame):
 
@@ -276,6 +307,7 @@ def team_weighted_mean_position_transform(df: pd.DataFrame):
     weights_radiant = 1 / df_Weighted[distances_radiant]
     weights_dire = 1 / df_Weighted[distances_dire]
     
+    #initialize weighted average columns
     df['radiant_Weighted_avg_x'] = 0
     df['radiant_Weighted_avg_y'] = 0
     df['dire_Weighted_avg_x'] = 0
@@ -328,7 +360,6 @@ def calculate_distances(df: pd.DataFrame, x_labels, y_labels):
                 distances[x_labels[i]].append(dist)
     return {label: np.mean(distances[label], axis=0) for label in distances}
 
-
 def feature_selection_transform(df: pd.DataFrame,target: pd.DataFrame, threshold: float) -> pd.DataFrame:
     feature_selector = RandomForestClassifier(max_depth=10,random_state=seed)
 
@@ -347,4 +378,4 @@ def feature_selection_transform(df: pd.DataFrame,target: pd.DataFrame, threshold
     df_reduced = df[feature_names[:n_selected_features]]
     print("Shape Tranformation:\n",df.shape,"->", df_reduced.shape)
 
-    return df_reduced    
+    return df_reduced
